@@ -281,7 +281,7 @@
    still calls window.storage.get/set/delete/list exactly as documented in
    Anthropic's artifact storage API. Outside an artifact that API doesn't
    exist, so this shim reproduces the same contract against a small
-   Express + JSON-file backend (see server.js). Nothing below this block
+   Express + PostgreSQL backend (see server.js). Nothing below this block
    needed to change to make the app portable.
    ========================================================================= */
 window.storage = {

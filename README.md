@@ -34,16 +34,72 @@ data.json         Created automatically at runtime — where session and
 
 Either way, no environment variables are required to get it running.
 
-## Persistence note
+## Persistence — Railway PostgreSQL (recommended)
 
-Session and learner data lives in `data.json` next to `server.js`.
-Railway's filesystem survives restarts but is **wiped on a fresh
-deploy** unless you attach a Volume mounted at `/app` (or wherever
-the service runs). For a training exercise that's usually fine — you
-reset between sessions anyway via the trainer dashboard's **Reset
-Simulation** button. If you want scores to survive redeploys, add a
-Volume in Railway's dashboard (Settings → Volumes) pointed at the
-app's working directory.
+Participant data (learner progress, session state, scores) is stored in
+**PostgreSQL** when `DATABASE_URL` is set. Without it, the app falls
+back to `data.json` for local development only.
+
+### Step-by-step: add Railway PostgreSQL
+
+1. **Open your Railway project**
+   Go to [railway.app](https://railway.app) and open the project that
+   deploys [CIPP_EXAM_SIMULATION](https://github.com/LPA-AI-Projects/CIPP_EXAM_SIMULATION).
+
+2. **Add a PostgreSQL database**
+   - Click **+ New** (or **Create**) in the project canvas
+   - Choose **Database** → **PostgreSQL**
+   - Railway creates a Postgres service and provisions a database
+
+3. **Connect the database to your web app**
+   - Click your **web app service** (the Node/Express one, not Postgres)
+   - Open the **Variables** tab
+   - Click **+ New Variable** → **Add Reference**
+   - Select the PostgreSQL service → choose **`DATABASE_URL`**
+   - Save — Railway will redeploy the web app automatically
+
+4. **Wait for redeploy**
+   - Open the web service **Deployments** tab
+   - Wait until the latest deploy shows **Success**
+   - Check **Deploy Logs** — you should see:
+     `Using PostgreSQL for participant data`
+
+5. **Verify it works**
+   - Open your public URL + `/api/health`
+   - You should see: `{"ok":true,"storage":"postgres"}`
+   - Run a test session: have a learner join, then check the trainer
+     dashboard — data now persists across redeploys and restarts
+
+6. **Optional — browse stored data**
+   - Click the **PostgreSQL** service in Railway
+   - Open the **Data** tab (or connect with any Postgres client using
+     the credentials from the **Connect** tab)
+   - Participant rows live in the `kv_store` table:
+     - `cipp:session-state` — current session (waiting / active)
+     - `cipp:progress:<id>` — each learner's name, email, answers, scores
+
+### What gets saved
+
+| Key pattern | Contents |
+|---|---|
+| `cipp:session-state` | Session status, start time, session ID |
+| `cipp:progress:*` | Per-learner progress, answers, scores, timestamps |
+
+Data survives Railway redeploys. Use the trainer dashboard **Reset
+Simulation** button to start a fresh session (clears progress keys and
+rotates the session ID).
+
+### Local development
+
+Without `DATABASE_URL`, the app uses `data.json` automatically:
+
+```
+npm install
+npm start
+```
+
+To test with Postgres locally, set `DATABASE_URL` to a local or cloud
+Postgres connection string before running `npm start`.
 
 ## How it works
 
