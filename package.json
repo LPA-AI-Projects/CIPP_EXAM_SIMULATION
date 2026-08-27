@@ -1,0 +1,16 @@
+{
+  "name": "cipp-exam-simulation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CIPP certification exam simulation — learner + trainer live sync app, for Learners Point.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

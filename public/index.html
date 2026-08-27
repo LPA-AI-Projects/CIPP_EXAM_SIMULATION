@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CIPP Exam Simulation — Learners Point</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#2E9D91;
+    --teal-dark:#217A70;
+    --teal-light:#E6F4F2;
+    --orange:#F2541D;
+    --orange-light:#FEEBE4;
+    --blue:#4F71F2;
+    --blue-light:#EAEEFE;
+    --ink:#20242B;
+    --ink-soft:#585F6B;
+    --line:#E4E7EC;
+    --paper:#FFFFFF;
+    --canvas:#F7F8FA;
+    --good:#1F9A5A;
+    --good-bg:#E9F8EF;
+    --bad:#D4392C;
+    --bad-bg:#FCEAE8;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(20,24,30,.04), 0 8px 24px -12px rgba(20,24,30,.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--canvas);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;margin:0;letter-spacing:-.01em;}
+  p{margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:inherit;}
+  ::selection{background:var(--teal-light);}
+
+  /* ---------- shared chrome ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;background:var(--paper);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:50;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand img{height:26px;display:block;}
+  .brand .div{width:1px;height:20px;background:var(--line);margin:0 4px;}
+  .brand .tag{font-size:12.5px;color:var(--ink-soft);font-weight:600;letter-spacing:.02em;}
+  .btn{
+    border:none;border-radius:10px;padding:11px 20px;font-weight:600;font-size:14.5px;
+    display:inline-flex;align-items:center;gap:8px;transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal);color:#fff;box-shadow:0 4px 14px -4px rgba(46,157,145,.55);}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-primary:disabled{background:#C7CCD3;box-shadow:none;cursor:not-allowed;color:#8A909B;}
+  .btn-orange{background:var(--orange);color:#fff;box-shadow:0 4px 14px -4px rgba(242,84,29,.5);}
+  .btn-orange:hover{filter:brightness(.94);}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--canvas);}
+  .btn-danger{background:#fff;color:var(--bad);border:1px solid #F3C9C4;}
+  .btn-danger:hover{background:var(--bad-bg);}
+  .btn-sm{padding:7px 12px;font-size:13px;border-radius:8px;}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+    padding:5px 11px;border-radius:100px;letter-spacing:.02em;text-transform:uppercase;
+  }
+  .pill-teal{background:var(--teal-light);color:var(--teal-dark);}
+  .pill-orange{background:var(--orange-light);color:#B8380F;}
+  .pill-blue{background:var(--blue-light);color:#3450C4;}
+  .pill-gray{background:#EEF0F3;color:var(--ink-soft);}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+  .dot-live{background:var(--good);box-shadow:0 0 0 3px var(--good-bg);}
+  .dot-idle{background:#C7CCD3;}
+
+  .container{max-width:1180px;margin:0 auto;padding:0 28px;}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:500;
+    box-shadow:0 10px 30px -6px rgba(0,0,0,.35);z-index:999;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  input[type=text],input[type=email],textarea{
+    width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px;
+    font-family:inherit;color:var(--ink);background:var(--paper);transition:border-color .12s;
+  }
+  input:focus,textarea:focus{outline:none;border-color:var(--teal);}
+  label{font-size:13px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;}
+  .field{margin-bottom:16px;}
+
+  /* ---------- landing ---------- */
+  .landing-hero{
+    padding:64px 28px 40px;text-align:center;
+  }
+  .landing-hero h1{font-size:clamp(28px,3.6vw,42px);margin-bottom:10px;}
+  .landing-hero p{color:var(--ink-soft);font-size:16px;max-width:560px;margin:0 auto;}
+  .split{
+    display:grid;grid-template-columns:1fr 1px 1fr;gap:0;max-width:940px;margin:36px auto 64px;
+  }
+  .split-col{padding:40px;}
+  .split-div{background:var(--line);}
+  .login-icon{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:19px;margin-bottom:16px;
+  }
+  .split-col h3{font-size:20px;margin-bottom:6px;}
+  .split-col .sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:24px;}
+  @media (max-width:760px){
+    .split{grid-template-columns:1fr;}
+    .split-div{height:1px;width:100%;}
+  }
+  .err{color:var(--bad);font-size:13px;font-weight:600;margin-top:8px;min-height:16px;}
+
+  /* ---------- waiting page ---------- */
+  .waiting-wrap{max-width:820px;margin:0 auto;padding:40px 28px 80px;}
+  .waiting-head{margin-bottom:28px;}
+  .waiting-head .pill{margin-bottom:14px;}
+  .waiting-head h1{font-size:30px;margin-bottom:8px;}
+  .waiting-head .who{color:var(--ink-soft);font-size:14.5px;}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:28px 0;}
+  @media (max-width:640px){.info-grid{grid-template-columns:1fr;}}
+  .info-block{padding:22px;}
+  .info-block h4{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin-bottom:12px;}
+  .info-block ul{margin:0;padding-left:18px;}
+  .info-block li{margin-bottom:7px;font-size:14.5px;line-height:1.5;}
+  .info-block p{font-size:14.5px;line-height:1.6;color:var(--ink);}
+  .stat-strip{display:flex;gap:12px;margin:24px 0;flex-wrap:wrap;}
+  .stat{padding:16px 20px;flex:1;min-width:150px;}
+  .stat .n{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;}
+  .stat .l{font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-top:2px;}
+  .start-zone{padding:28px;text-align:center;margin-top:8px;}
+  .start-zone .msg{font-size:14.5px;color:var(--ink-soft);margin-top:14px;line-height:1.5;}
+  .pulse{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--orange);margin-right:8px;animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(242,84,29,.5);}70%{box-shadow:0 0 0 9px rgba(242,84,29,0);}100%{box-shadow:0 0 0 0 rgba(242,84,29,0);}}
+
+  /* ---------- exam ---------- */
+  .exam-top{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50;}
+  .timer-chip{
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;
+    padding:8px 16px;border-radius:10px;background:var(--ink);color:#fff;letter-spacing:.03em;
+    display:flex;align-items:center;gap:8px;
+  }
+  .timer-chip.warn{background:var(--orange);}
+  .timer-chip .lbl{font-family:'Inter';font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.05em;opacity:.75;}
+  .rail-wrap{padding:16px 28px 0;max-width:1180px;margin:0 auto;}
+  .rail{display:flex;gap:3px;}
+  .rail-seg{flex:1;height:5px;border-radius:3px;background:#E4E7EC;}
+  .rail-seg.done-a{background:var(--teal);}
+  .rail-seg.done-b{background:var(--blue);}
+  .rail-seg.done-c{background:var(--orange);}
+  .rail-seg.done-d{background:var(--ink);}
+  .rail-seg.current{outline:2px solid var(--ink);outline-offset:1px;}
+  .rail-legend{display:flex;gap:18px;margin-top:8px;font-size:11.5px;color:var(--ink-soft);font-weight:600;}
+  .rail-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .rail-legend i{width:8px;height:8px;border-radius:2px;display:inline-block;}
+
+  .q-wrap{max-width:760px;margin:0 auto;padding:36px 28px 100px;}
+  .q-card{padding:32px;}
+  .q-meta{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .q-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink-soft);font-weight:600;}
+  .q-text{font-size:19px;line-height:1.5;font-weight:600;margin-bottom:22px;}
+  .scenario-box{background:var(--canvas);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:20px;font-size:14.5px;line-height:1.6;color:var(--ink-soft);}
+  .table-wrap{overflow-x:auto;margin-bottom:20px;}
+  table.scenario-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.scenario-table th,table.scenario-table td{border:1px solid var(--line);padding:9px 12px;text-align:left;}
+  table.scenario-table th{background:var(--canvas);font-weight:700;color:var(--ink-soft);font-size:12px;text-transform:uppercase;letter-spacing:.02em;}
+  .subparts{margin:0 0 20px;padding-left:0;list-style:none;}
+  .subparts li{font-size:14.5px;line-height:1.6;margin-bottom:6px;padding-left:22px;position:relative;}
+  .subparts li b{position:absolute;left:0;color:var(--orange);}
+
+  .opt{
+    display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid var(--line);border-radius:10px;
+    margin-bottom:10px;cursor:pointer;transition:border-color .12s, background .12s;
+  }
+  .opt:hover{border-color:#C7D8D6;}
+  .opt.selected{border-color:var(--teal);background:var(--teal-light);}
+  .opt.correct{border-color:var(--good);background:var(--good-bg);}
+  .opt.incorrect{border-color:var(--bad);background:var(--bad-bg);}
+  .opt input{accent-color:var(--teal);width:16px;height:16px;flex:none;}
+  .opt .letter{
+    width:26px;height:26px;border-radius:7px;background:var(--canvas);display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:12.5px;flex:none;font-family:'JetBrains Mono',monospace;
+  }
+  .opt.correct .letter{background:var(--good);color:#fff;}
+  .opt.incorrect .letter{background:var(--bad);color:#fff;}
+  .opt .txt{font-size:14.5px;line-height:1.4;}
+  .opt.disabled{cursor:default;}
+
+  .feedback{border-radius:10px;padding:16px 18px;margin:18px 0;font-size:14.5px;line-height:1.6;display:flex;gap:12px;}
+  .feedback.good{background:var(--good-bg);color:#146138;}
+  .feedback.bad{background:var(--bad-bg);color:#8F241B;}
+  .feedback.info{background:var(--blue-light);color:#2C3F9E;}
+  .feedback.note{background:var(--canvas);color:var(--ink-soft);border:1px dashed var(--line);}
+  .feedback .icon{font-size:18px;flex:none;line-height:1;}
+  .feedback b{display:block;margin-bottom:3px;font-family:'Space Grotesk';font-size:14px;}
+
+  .q-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;}
+  .char-count{font-size:12px;color:var(--ink-soft);text-align:right;margin-top:6px;}
+
+  /* ---------- results ---------- */
+  .results-wrap{max-width:820px;margin:0 auto;padding:44px 28px 90px;}
+  .badge-hero{text-align:center;padding:44px 28px;position:relative;overflow:hidden;}
+  .badge-icon{width:88px;height:88px;border-radius:24px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;font-size:40px;}
+  .badge-hero h2{font-size:26px;margin-bottom:6px;}
+  .badge-hero p{color:var(--ink-soft);font-size:14.5px;max-width:420px;margin:0 auto;}
+  .score-row{display:flex;gap:14px;margin:28px 0;flex-wrap:wrap;}
+  .score-box{flex:1;min-width:140px;padding:18px;text-align:center;}
+  .score-box .v{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;}
+  .score-box .l{font-size:11.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.03em;margin-top:4px;}
+  .marks-table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px;}
+  .marks-table th,.marks-table td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;}
+  .marks-table th{color:var(--ink-soft);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;}
+  .marks-table tr:last-child td{border-bottom:none;font-weight:700;}
+  .review-section{margin-top:36px;}
+  .review-section h3{font-size:17px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--line);}
+  .review-item{padding:18px 20px;border-bottom:1px solid var(--line);}
+  .review-item:last-child{border-bottom:none;}
+  .review-q{font-size:14.5px;font-weight:600;margin-bottom:8px;}
+  .review-a{font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+  .review-a b{color:var(--ink);}
+  .badge-check{color:var(--good);}
+  .badge-x{color:var(--bad);}
+
+  /* ---------- trainer dashboard ---------- */
+  .dash-wrap{max-width:1180px;margin:0 auto;padding:28px 28px 90px;}
+  .dash-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:14px;}
+  .dash-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  @media (max-width:800px){.kpi-row{grid-template-columns:1fr 1fr;}}
+  .kpi{padding:18px 20px;}
+  .kpi .n{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;}
+  .kpi .l{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .panel{margin-bottom:22px;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);}
+  .panel-head h3{font-size:15.5px;}
+  table.dash-table{width:100%;border-collapse:collapse;font-size:14px;}
+  table.dash-table th{text-align:left;padding:11px 20px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);border-bottom:1px solid var(--line);background:var(--canvas);}
+  table.dash-table td{padding:12px 20px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  table.dash-table tr:last-child td{border-bottom:none;}
+  .name-cell{font-weight:600;}
+  .email-cell{color:var(--ink-soft);font-size:13px;}
+  .progress-track{width:100px;height:6px;background:var(--canvas);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:8px;}
+  .progress-fill{height:100%;background:var(--teal);}
+  .empty-state{padding:50px 20px;text-align:center;color:var(--ink-soft);}
+  .empty-state .ic{font-size:30px;margin-bottom:10px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,24,30,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px;}
+  .modal{background:var(--paper);border-radius:16px;max-width:760px;width:100%;max-height:86vh;overflow-y:auto;box-shadow:0 24px 60px -12px rgba(0,0,0,.4);}
+  .modal-head{position:sticky;top:0;background:var(--paper);padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;z-index:2;}
+  .modal-body{padding:8px 24px 24px;}
+  .close-x{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;}
+
+  .ak-section{margin-bottom:26px;}
+  .ak-section h4{font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);margin-bottom:10px;}
+  .ak-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;}
+  .ak-row .qn{font-family:'JetBrains Mono',monospace;font-weight:700;width:26px;flex:none;}
+  .ak-row .ans{font-weight:700;color:var(--teal-dark);width:22px;flex:none;}
+
+  footer{text-align:center;padding:26px;color:var(--ink-soft);font-size:12.5px;}
+  .hidden{display:none !important;}
+  #app{min-height:100vh;display:flex;flex-direction:column;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   window.storage SHIM — Railway / standalone deployment
+   The rest of this app is unchanged from the Claude artifact version and
+   still calls window.storage.get/set/delete/list exactly as documented in
+   Anthropic's artifact storage API. Outside an artifact that API doesn't
+   exist, so this shim reproduces the same contract against a small
+   Express + JSON-file backend (see server.js). Nothing below this block
+   needed to change to make the app portable.
+   ========================================================================= */
+window.storage = {
+  async get(key, shared){
+    const res = await fetch('/api/kv/'+encodeURIComponent(key));
+    if(res.status===404) return null;
+    if(!res.ok) throw new Error('Storage get failed: '+res.status);
+    const data = await res.json();
+    return {key, value:data.value, shared:true};
+  },
+  async set(key, value, shared){
+    const res = await fetch('/api/kv/'+encodeURIComponent(key), {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({value})
+    });
+    if(!res.ok) throw new Error('Storage set failed: '+res.status);
+    const data = await res.json();
+    return {key, value:data.value, shared:true};
+  },
+  async delete(key, shared){
+    const res = await fetch('/api/kv/'+encodeURIComponent(key), {method:'DELETE'});
+    if(!res.ok && res.status!==404) throw new Error('Storage delete failed: '+res.status);
+    return {key, deleted:true, shared:true};
+  },
+  async list(prefix, shared){
+    const res = await fetch('/api/kv?prefix='+encodeURIComponent(prefix||''));
+    if(!res.ok) throw new Error('Storage list failed: '+res.status);
+    const data = await res.json();
+    return {keys:data.keys, prefix, shared:true};
+  }
+};
+</script>
+<script>
+/* =========================================================================
+   CIPP EXAM SIMULATION — Learners Point
+   Single-file app. Vanilla JS. Live sync via window.storage (shared=true).
+   Identity persists via URL hash (no browser storage permitted).
+   ========================================================================= */
+
+const LOGO = "data:image/png;base64,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";
+
+/* ---------------------------- QUESTION BANK ---------------------------- */
+
+const SECTION_A = [
+ {id:'a1',q:"What is the primary objective of purchasing?",opts:["To maximize the number of suppliers","To obtain the right goods/services at the right quality, quantity, price, and time","To eliminate all inventory","To increase administrative work"],correct:1,why:"Purchasing exists to secure the right goods or services at the right quality, quantity, price, and time — balancing all these factors, not just cost or supplier count."},
+ {id:'a2',q:"Which of the following is NOT normally a purchasing responsibility?",opts:["Supplier selection","Purchase order management","Negotiating with suppliers","Designing the company's advertising campaign"],correct:3,why:"Designing advertising campaigns belongs to marketing, not purchasing, which focuses on sourcing, ordering, and supplier negotiation."},
+ {id:'a3',q:'The term "5 Rights of Purchasing" commonly includes:',opts:["Right supplier, right employee, right office, right system, right manager","Right quality, right quantity, right price, right place, right time","Right product, right advertisement, right customer, right profit, right market","Right budget, right tax, right salary, right warehouse, right manager"],correct:1,why:"The 5 Rights are quality, quantity, price, place, and time — the core criteria every purchase decision is judged against."},
+ {id:'a4',q:"What is the correct sequence in a typical P2P process?",opts:["Invoice → Purchase Requisition → Payment → Purchase Order","Purchase Requisition → Purchase Order → Goods Receipt → Invoice → Payment","Payment → Invoice → Purchase Order → Goods Receipt","Goods Receipt → Payment → Purchase Requisition → Invoice"],correct:1,why:"The P2P process flows in order: a requisition triggers an order, which is fulfilled and invoiced, and finally paid."},
+ {id:'a5',q:"What is the purpose of a Purchase Requisition (PR)?",opts:["To request approval to purchase goods or services","To pay the supplier","To evaluate supplier performance","To receive goods into inventory"],correct:0,why:"A Purchase Requisition is an internal request seeking approval to buy — it precedes any order being placed."},
+ {id:'a6',q:"Three-way matching normally compares:",opts:["Budget, contract, and supplier evaluation","Purchase order, goods receipt, and supplier invoice","Purchase requisition, quotation, and payment","Supplier, buyer, and warehouse"],correct:1,why:"Three-way matching checks that the purchase order, the goods receipt, and the supplier's invoice all agree before payment is released."},
+ {id:'a7',q:"E-procurement primarily involves:",opts:["Purchasing only through physical stores","Using electronic systems and technologies to manage procurement activities","Eliminating suppliers","Using paper-based purchase orders"],correct:1,why:"E-procurement means using electronic systems and technology to run procurement activities, replacing manual, paper-based methods."},
+ {id:'a8',q:"Which is an advantage of e-procurement?",opts:["Increased paperwork","Reduced visibility","Faster processing and improved transparency","More manual errors"],correct:2,why:"Digitizing procurement speeds up processing and gives everyone better visibility into spend and status — the opposite of paperwork and manual error."},
+ {id:'a9',q:"Strategic sourcing focuses mainly on:",opts:["Making purchases without supplier analysis","Identifying the best suppliers and achieving long-term value","Selecting the most expensive supplier","Avoiding contracts"],correct:1,why:"Strategic sourcing looks beyond the immediate purchase to identify suppliers who deliver long-term value, not just the lowest price today."},
+ {id:'a10',q:"Supplier Relationship Management (SRM) is intended to:",opts:["Build and manage effective relationships with suppliers","Eliminate communication with suppliers","Increase the number of invoices","Prevent supplier performance monitoring"],correct:0,why:"SRM exists to build structured, ongoing relationships with suppliers so both sides get more value over time."},
+ {id:'a11',q:"Sustainable procurement considers:",opts:["Only purchase price","Economic, environmental, and social impacts","Only supplier location","Only delivery speed"],correct:1,why:"Sustainable procurement weighs economic, environmental, and social impact together, not price or location alone."},
+ {id:'a12',q:"Which is an example of environmentally responsible procurement?",opts:["Selecting products with unnecessary packaging","Purchasing energy-efficient equipment","Ignoring waste generation","Selecting suppliers solely because they are the cheapest"],correct:1,why:"Choosing energy-efficient equipment reduces environmental impact, which is exactly what environmentally responsible procurement targets."},
+ {id:'a13',q:"Which factor is commonly used to evaluate supplier performance?",opts:["Delivery reliability","Office decoration","Employee hobbies","Supplier logo design"],correct:0,why:"Delivery reliability is a standard, measurable performance criterion; office décor or hobbies have no bearing on supplier capability."},
+ {id:'a14',q:"A supplier scorecard is used to:",opts:["Advertise products","Measure supplier performance against defined criteria","Process employee salaries","Calculate customer sales"],correct:1,why:"A supplier scorecard tracks performance against agreed criteria (quality, delivery, cost, etc.) so buyers can compare and manage suppliers objectively."},
+ {id:'a15',q:"One major challenge of global purchasing is:",opts:["Reduced geographical distance","Currency, logistics, regulatory, and cultural risks","Elimination of transportation","Guaranteed delivery"],correct:1,why:"Working across borders introduces currency, logistics, regulatory, and cultural risks that don't exist in domestic purchasing."},
+ {id:'a16',q:"Exchange-rate fluctuations can affect:",opts:["The cost of internationally purchased goods","Only employee salaries","Supplier product quality automatically","Warehouse size"],correct:0,why:"A weaker exchange rate can directly raise the landed cost of goods bought from overseas suppliers."},
+ {id:'a17',q:"The BATNA in negotiation refers to:",opts:["Best Alternative To a Negotiated Agreement","Basic Agreement To Negotiate Again","Buyer Analysis of Total Negotiation Amount","Business Agreement and Trading Negotiation Approach"],correct:0,why:"BATNA stands for Best Alternative To a Negotiated Agreement — the fallback option a party would take if talks fail."},
+ {id:'a18',q:"Effective negotiation should aim to:",opts:["Create value and achieve mutually acceptable outcomes","Always defeat the supplier","Avoid preparation","Focus only on price"],correct:0,why:"Good negotiation aims to create value and reach outcomes both sides can accept, not simply beat the other party."},
+ {id:'a19',q:"Which is an important negotiation preparation activity?",opts:["Identifying objectives and alternatives","Avoiding information gathering","Making decisions randomly","Refusing to communicate"],correct:0,why:"Solid preparation — knowing your objectives and alternatives — is what gives a negotiator leverage and direction."},
+ {id:'a20',q:"A win-win negotiation generally means:",opts:["Only the buyer benefits","Only the supplier benefits","Both parties achieve acceptable value from the agreement","Neither party reaches an agreement"],correct:2,why:"A win-win negotiation ends with both parties gaining acceptable value from the agreement, rather than one side losing."}
+];
+
+const SECTION_B = [
+ {id:'b21',q:"Define purchasing and explain its importance to an organization.",model:"Purchasing: The process of obtaining goods and services required by an organization. It supports operations by ensuring the required items are obtained at the appropriate quality, quantity, price, and time."},
+ {id:'b22',q:"Explain the difference between purchasing and procurement.",model:"Purchasing vs. Procurement: Purchasing is primarily concerned with the transactional buying process, while procurement is broader and includes sourcing, supplier management, contracts, risk, strategy, and purchasing."},
+ {id:'b23',q:"Describe the main stages of the Procure-to-Pay (P2P) process.",model:"P2P: Requisition → approval → sourcing/quotation → purchase order → receipt of goods/services → invoice → three-way match → payment."},
+ {id:'b24',q:"What is a Purchase Order (PO), and why is it important?",model:"PO: A formal document issued to a supplier specifying what is being purchased, quantities, prices, terms, and delivery requirements."},
+ {id:'b25',q:"Identify three benefits of e-procurement.",model:"E-procurement benefits: Faster processing, improved transparency, reduced paperwork, better spend visibility, automation, and reduced errors."},
+ {id:'b26',q:"Explain the difference between strategic sourcing and traditional purchasing.",model:"Strategic sourcing: Uses systematic analysis of suppliers, markets, costs, risks, and organizational requirements to achieve long-term value rather than simply processing individual purchases."},
+ {id:'b27',q:"List and briefly explain three criteria used to evaluate suppliers.",model:"Supplier evaluation: Quality, price/cost, delivery performance, reliability, service, sustainability, financial stability, and compliance."},
+ {id:'b28',q:"What is sustainable procurement? Give two examples.",model:"Sustainable procurement: Purchasing that considers economic, environmental, and social impacts. Examples include energy-efficient products and suppliers with responsible labor/environmental practices."},
+ {id:'b29',q:"Identify three risks associated with global purchasing.",model:"Global purchasing risks: Currency fluctuations, transportation delays, customs/regulatory issues, geopolitical risks, cultural differences, and longer lead times."},
+ {id:'b30',q:"Explain what BATNA means and why it is important during negotiations.",model:"BATNA: Best Alternative To a Negotiated Agreement. It represents the best option available if negotiations fail and strengthens the buyer's negotiating position."}
+];
+
+const SECTION_C = [
+ {id:'c31',title:"P2P Scenario",scenario:"A company needs to purchase 100 laptops for its new employees. The department submits a request, the procurement team obtains quotations, and a supplier is selected.",subparts:["Identify the appropriate steps from purchase requisition to payment.","Explain how three-way matching could be used in this transaction."]},
+ {id:'c32',title:"Supplier Selection Scenario",scenario:"Your company needs a supplier for packaging materials. Three suppliers submit offers:",table:{headers:["Criteria","Supplier A","Supplier B","Supplier C"],rows:[["Price","Excellent","Good","Average"],["Quality","Good","Excellent","Good"],["Delivery","Average","Excellent","Poor"],["Sustainability","Poor","Excellent","Good"],["Service","Good","Excellent","Average"]]},subparts:["Which supplier would you recommend?","Explain your decision using at least three criteria.","Why should the company avoid selecting a supplier based on price alone?"]},
+ {id:'c33',title:"Global Purchasing Scenario",scenario:"A company based in the UAE purchases raw materials from a supplier in Europe. The supplier offers a competitive price, but the company is concerned about currency fluctuations, transportation delays, and customs requirements.",subparts:["Identify three risks involved.","Suggest one mitigation strategy for each risk.","Explain why global sourcing may still be beneficial."]},
+ {id:'c34',title:"Sustainable Procurement Scenario",scenario:"A hotel is replacing 500 light bulbs. Supplier A offers the cheapest conventional bulbs, while Supplier B offers more expensive energy-efficient bulbs with a longer lifespan.",subparts:["Which supplier should the hotel consider?","Identify the sustainability factors that should be considered.","Why should purchasing decisions consider total cost of ownership (TCO) rather than purchase price alone?"]},
+ {id:'c35',title:"Negotiation Scenario",scenario:"A supplier quotes AED 500,000 for a one-year contract. The buyer's target is AED 450,000, but the buyer knows another qualified supplier could provide a similar service for approximately AED 470,000.",subparts:["What should the buyer's BATNA be?","Identify two negotiation objectives.","Suggest two areas other than price that could be negotiated.","Explain how the buyer could seek a win-win outcome."]}
+];
+
+const SECTION_D = [
+ {id:'d36',title:"Strategic Procurement",prompt:'"Modern procurement is no longer simply about buying products at the lowest possible price." Discuss this statement. In your answer, explain how procurement contributes to:',topics:["Cost management","Supplier relationships","Risk management","Quality","Sustainability","Organizational competitiveness"],closing:"Provide relevant examples."},
+ {id:'d37',title:"Supplier Management and Negotiation",prompt:"A company has been experiencing repeated late deliveries, quality problems, and increasing prices from one of its key suppliers. As the procurement manager, explain how you would address the situation. Your answer should discuss:",topics:["Supplier performance evaluation","Supplier scorecards/KPIs","Communication with the supplier","Corrective action","Negotiation strategy","Alternative suppliers","Long-term supplier relationship management"]}
+];
+
+const ALL_ITEMS = [
+  ...SECTION_A.map(x=>({...x,section:'A',marks:1})),
+  ...SECTION_B.map(x=>({...x,section:'B',marks:3})),
+  ...SECTION_C.map(x=>({...x,section:'C',marks:6})),
+  ...SECTION_D.map(x=>({...x,section:'D',marks:10}))
+];
+const TOTAL_A = SECTION_A.length; // 20
+const EXAM_SECONDS = 2*60*60; // 2 hours
+
+/* ------------------------------ STORAGE --------------------------------
+   Resilient write-through layer. A transient backend error must never
+   lose a learner's place or bounce them back to login, so:
+   - every set() is applied to an in-memory cache immediately (the tab's
+     own source of truth) and ALSO queued for background sync
+   - background sync retries with capped exponential backoff, silently,
+     until it lands — no console spam, no dropped progress
+   - get() prefers the local cache for keys this tab itself owns, and
+     only hits the network for keys it doesn't (so it always sees other
+     tabs' live updates, e.g. session-state written by the trainer)
+   ------------------------------------------------------------------- */
+
+const localCache = {};      // key -> last known-good value (this tab)
+const outbox = {};          // key -> value still waiting to be confirmed saved
+const outboxAttempts = {};  // key -> retry count, for backoff
+let flushLoopRunning = false;
+let syncPending = 0;        // count of keys currently unsynced, drives the UI dot
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function updateSyncIndicator(){
+  syncPending = Object.keys(outbox).length;
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  if(!dot) return;
+  if(syncPending>0){ dot.className='dot dot-idle'; if(label) label.textContent='Syncing…'; }
+  else { dot.className='dot dot-live'; if(label) label.textContent='Synced'; }
+}
+
+async function rawSet(key,val){
+  await window.storage.set(key, JSON.stringify(val), true);
+}
+
+function queueWrite(key,val){
+  outbox[key] = val;
+  outboxAttempts[key] = 0;
+  updateSyncIndicator();
+  if(!flushLoopRunning) flushLoop();
+}
+
+async function flushLoop(){
+  flushLoopRunning = true;
+  while(Object.keys(outbox).length){
+    const key = Object.keys(outbox)[0];
+    const val = outbox[key];
+    try{
+      await rawSet(key,val);
+      // only clear if nothing newer queued while we were writing
+      if(outbox[key]===val){ delete outbox[key]; delete outboxAttempts[key]; }
+      updateSyncIndicator();
+    }catch(e){
+      outboxAttempts[key] = (outboxAttempts[key]||0)+1;
+      const wait = Math.min(1000 * Math.pow(1.6, outboxAttempts[key]), 8000);
+      if(outboxAttempts[key]===1 || outboxAttempts[key]%6===0){
+        // log sparingly — once up front, then every ~6th retry — never per attempt
+        console.warn('Sync retrying for', key, '— will keep trying in the background.');
+      }
+      await sleep(wait);
+    }
+  }
+  flushLoopRunning = false;
+}
+
+async function withRetry(fn, attempts){
+  attempts = attempts || 3;
+  let lastErr;
+  for(let i=0;i<attempts;i++){
+    try{ return await fn(); }
+    catch(e){ lastErr = e; if(i<attempts-1) await sleep(300*(i+1)); }
+  }
+  throw lastErr;
+}
+
+async function sGet(key){
+  if(Object.prototype.hasOwnProperty.call(localCache,key)){
+    return JSON.parse(JSON.stringify(localCache[key]));
+  }
+  try{
+    const r = await withRetry(()=>window.storage.get(key,true), 2);
+    return r? JSON.parse(r.value) : null;
+  }catch(e){ return null; }
+}
+async function sSet(key,val){
+  localCache[key] = JSON.parse(JSON.stringify(val));
+  queueWrite(key,val);
+  return true;
+}
+async function sDel(key){
+  delete localCache[key];
+  delete outbox[key];
+  try{ await withRetry(()=>window.storage.delete(key,true), 2); }catch(e){ /* best-effort */ }
+}
+async function sList(prefix){
+  try{
+    const r = await withRetry(()=>window.storage.list(prefix,true), 2);
+    return r? r.keys : [];
+  }catch(e){ return []; }
+}
+
+const SESSION_KEY = 'cipp:session-state';
+const PROGRESS_PREFIX = 'cipp:progress:';
+function progKey(id){ return PROGRESS_PREFIX+id; }
+
+async function getSession(){
+  let s = await sGet(SESSION_KEY);
+  if(!s){ s = {status:'waiting', startedAt:null, sessionId:'S'+Date.now()}; await sSet(SESSION_KEY,s); }
+  return s;
+}
+// Discover every learner by listing progress keys directly — no shared
+// index to race on. Returns the parsed progress objects (name/email live
+// inside each one already), skipping any key that fails to parse/fetch.
+async function getAllProgress(){
+  const keys = await sList(PROGRESS_PREFIX);
+  const fetched = await Promise.all(keys.map(k=>sGet(k)));
+  return fetched.filter(Boolean);
+}
+
+/* -------------------------------- UTIL ---------------------------------- */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtTime(sec){
+  sec = Math.max(0,Math.round(sec));
+  const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+  return (h>0? String(h).padStart(2,'0')+':':'') + String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function fmtDT(ts){
+  if(!ts) return '—';
+  const d = new Date(ts);
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' · '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+}
+function uid(){ return 'L'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+let toastTimer=null;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'),2600);
+}
+function letter(i){ return String.fromCharCode(65+i); }
+
+function badgeFor(scoreA){
+  const pct = scoreA/TOTAL_A*100;
+  if(pct>=90) return {tier:'gold',icon:'🏆',title:'Procurement Pro',color:'#B8860B',bg:'#FFF6E0',
+    remark:"Outstanding command of core purchasing and procurement concepts. You're operating at exam-ready level on the multiple-choice fundamentals."};
+  if(pct>=75) return {tier:'silver',icon:'🥈',title:'Strong Performer',color:'#5B6472',bg:'#EEF0F3',
+    remark:"A confident, accurate grasp of the material with only minor gaps. A short review of the missed topics will get you to mastery."};
+  if(pct>=60) return {tier:'bronze',icon:'🥉',title:'Solid Pass',color:'#9A5B2E',bg:'#FBEEE2',
+    remark:"You've met the baseline understanding of the CIPP fundamentals. Revisit the flagged questions below to firm up the weaker areas."};
+  return {tier:'none',icon:'📘',title:'Keep Practicing',color:'#585F6B',bg:'#F1F2F4',
+    remark:"Several core concepts need another pass. Review the explanations for each question below before attempting the simulation again."};
+}
+
+/* -------------------------------- ROUTER --------------------------------- */
+
+const app = document.getElementById('app');
+let pollHandle = null;
+let tickHandle = null;
+
+function stopTimers(){ if(pollHandle) clearInterval(pollHandle); if(tickHandle) clearInterval(tickHandle); pollHandle=null; tickHandle=null; }
+
+function route(){
+  stopTimers();
+  const h = window.location.hash.slice(1); // e.g. waiting/ID  exam/ID  results/ID  trainer
+  const [page,id] = h.split('/');
+  if(page==='waiting' && id) renderWaiting(id);
+  else if(page==='exam' && id) renderExam(id);
+  else if(page==='results' && id) renderResults(id);
+  else if(page==='trainer') renderTrainer();
+  else renderLanding();
+}
+window.addEventListener('hashchange',route);
+window.addEventListener('DOMContentLoaded',route);
+
+/* ------------------------------- LANDING --------------------------------- */
+
+function renderLanding(){
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand"><img src="${LOGO}" alt="Learners Point"/></div>
+      <span class="pill pill-gray">CIPP Exam Simulation</span>
+    </div>
+    <div class="landing-hero">
+      <span class="pill pill-orange" style="margin-bottom:16px;">Certified International Procurement Professional</span>
+      <h1>CIPP Exam Simulation</h1>
+      <p>A full-length, timed practice exam covering purchasing fundamentals, sourcing, global procurement risk, and negotiation — mirroring the real CIPP assessment structure.</p>
+    </div>
+    <div class="split card">
+      <div class="split-col">
+        <div class="login-icon" style="background:var(--teal-light);color:var(--teal-dark);">🎓</div>
+        <h3>Learner Login</h3>
+        <div class="sub">No account needed — just enter your details to join the session.</div>
+        <div class="field"><label>Full name</label><input type="text" id="ln-name" placeholder="e.g. Sara Al Mansoori" /></div>
+        <div class="field"><label>Email address</label><input type="email" id="ln-email" placeholder="you@company.com" /></div>
+        <div class="err" id="ln-err"></div>
+        <button class="btn btn-primary" id="ln-submit" style="width:100%;justify-content:center;">Join Simulation →</button>
+      </div>
+      <div class="split-div"></div>
+      <div class="split-col">
+        <div class="login-icon" style="background:var(--blue-light);color:#3450C4;">🛡️</div>
+        <h3>Trainer Login</h3>
+        <div class="sub">Restricted access for authorized trainers and administrators.</div>
+        <div class="field"><label>Access code</label><input type="text" id="tr-code" placeholder="••••" maxlength="8" /></div>
+        <div class="err" id="tr-err"></div>
+        <button class="btn btn-ghost" id="tr-submit" style="width:100%;justify-content:center;border-color:#4F71F2;color:#4F71F2;">Access Dashboard →</button>
+      </div>
+    </div>
+    <footer>Learners Point · CIPP Exam Simulation · Internal training use</footer>
+  `;
+
+  document.getElementById('ln-submit').onclick = onLearnerLogin;
+  document.getElementById('tr-submit').onclick = onTrainerLogin;
+  document.getElementById('ln-email').addEventListener('keydown', e=>{ if(e.key==='Enter') onLearnerLogin(); });
+  document.getElementById('tr-code').addEventListener('keydown', e=>{ if(e.key==='Enter') onTrainerLogin(); });
+}
+
+async function onLearnerLogin(){
+  const name = document.getElementById('ln-name').value.trim();
+  const email = document.getElementById('ln-email').value.trim();
+  const errEl = document.getElementById('ln-err');
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if(!name || !emailOk){
+    errEl.textContent = !name ? 'Please enter your full name.' : 'Please enter a valid email address.';
+    return;
+  }
+  errEl.textContent='';
+  const btn = document.getElementById('ln-submit');
+  btn.disabled = true; btn.textContent='Joining…';
+
+  const session = await getSession();
+  const id = uid();
+  // Each learner writes only their own progress key — never a shared list —
+  // so two people joining at the same instant can't overwrite each other.
+  // The trainer dashboard discovers everyone by listing progress keys directly.
+  await sSet(progKey(id), {
+    id,name,email,joinedAt:Date.now(),sessionId:session.sessionId,
+    status:'waiting', currentIndex:0, startedAt:null, completedAt:null,
+    answers:{}, bcdAnswers:{}, sectionAScore:0
+  });
+  window.location.hash = '#waiting/'+id;
+}
+
+function onTrainerLogin(){
+  const code = document.getElementById('tr-code').value.trim();
+  const errEl = document.getElementById('tr-err');
+  if(code !== '2468'){ errEl.textContent = 'Incorrect access code.'; return; }
+  errEl.textContent='';
+  window.location.hash = '#trainer';
+}
+
+/* ------------------------------- WAITING ---------------------------------- */
+
+async function renderWaiting(id){
+  let prog = await sGet(progKey(id));
+  if(!prog){ window.location.hash=''; return; }
+  let session = await getSession();
+
+  if(prog.sessionId !== session.sessionId){
+    app.innerHTML = resetNotice();
+    document.getElementById('back-home').onclick = ()=>{ window.location.hash=''; };
+    return;
+  }
+
+  if(prog.status==='in-progress'){ window.location.hash='#exam/'+id; return; }
+  if(prog.status==='completed'){ window.location.hash='#results/'+id; return; }
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand"><img src="${LOGO}" alt="Learners Point"/></div>
+      <span class="pill pill-gray" id="live-pill"><span class="dot dot-idle" id="live-dot"></span> Connecting…</span>
+    </div>
+    <div class="waiting-wrap">
+      <div class="waiting-head">
+        <span class="pill pill-teal">Exam Simulation · Waiting Room</span>
+        <h1>CIPP — Certified International Procurement Professional</h1>
+        <div class="who">Signed in as <b>${esc(prog.name)}</b> · ${esc(prog.email)}</div>
+      </div>
+
+      <div class="stat-strip">
+        <div class="card stat"><div class="n">37</div><div class="l">Total questions</div></div>
+        <div class="card stat"><div class="n">2h 00m</div><div class="l">Duration</div></div>
+        <div class="card stat"><div class="n">100</div><div class="l">Total marks</div></div>
+        <div class="card stat"><div class="n">4</div><div class="l">Sections</div></div>
+      </div>
+
+      <div class="info-grid">
+        <div class="card info-block">
+          <h4>Overview</h4>
+          <p>This simulation mirrors the full CIPP exam: 20 multiple-choice questions on purchasing fundamentals, 10 short-answer questions, 5 applied scenarios, and 2 critical-thinking essays covering sourcing, supplier management, global purchasing risk, sustainability, and negotiation.</p>
+        </div>
+        <div class="card info-block">
+          <h4>Learning objectives</h4>
+          <ul>
+            <li>Apply the core principles and 5 Rights of purchasing</li>
+            <li>Trace the Procure-to-Pay process and three-way matching</li>
+            <li>Evaluate suppliers using performance and sustainability criteria</li>
+            <li>Assess global purchasing risk and mitigation strategies</li>
+            <li>Apply BATNA and win-win negotiation techniques</li>
+          </ul>
+        </div>
+        <div class="card info-block">
+          <h4>Instructions &amp; participation</h4>
+          <ul>
+            <li>Answer every question in the order presented</li>
+            <li>Section A gives instant feedback with the correct answer</li>
+            <li>Sections B, C and D are submitted for trainer review</li>
+            <li>Your progress is saved automatically after each question</li>
+          </ul>
+        </div>
+        <div class="card info-block">
+          <h4>Rules &amp; important notes</h4>
+          <ul>
+            <li>The 2-hour timer starts the moment you click Start and cannot be paused</li>
+            <li>The exam auto-submits when time runs out</li>
+            <li>Work independently and in one sitting</li>
+            <li>Do not refresh mid-question after submitting an answer</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card start-zone">
+        <button class="btn btn-primary" id="start-btn" style="min-width:260px;justify-content:center;" disabled>Start Simulation</button>
+        <div class="msg" id="start-msg"><span class="pulse"></span>Waiting for trainer approval. The simulation will begin once the trainer starts the session.</div>
+      </div>
+    </div>
+    <footer>Learners Point · CIPP Exam Simulation</footer>
+  `;
+
+  const startBtn = document.getElementById('start-btn');
+  const msg = document.getElementById('start-msg');
+
+  function applySession(s){
+    const dot = document.getElementById('live-dot');
+    const pill = document.getElementById('live-pill');
+    if(dot){ dot.className='dot dot-live'; pill.innerHTML = '<span class="dot dot-live"></span> Live · syncing with trainer'; }
+    if(s.status==='active'){
+      startBtn.disabled=false;
+      msg.innerHTML = 'The trainer has started the session — you may begin now.';
+    } else {
+      startBtn.disabled=true;
+      msg.innerHTML = '<span class="pulse"></span>Waiting for trainer approval. The simulation will begin once the trainer starts the session.';
+    }
+  }
+  applySession(session);
+
+  startBtn.onclick = async ()=>{
+    if(startBtn.disabled) return;
+    startBtn.disabled=true; startBtn.textContent='Starting…';
+    const p = await sGet(progKey(id)) || prog;
+    p.status='in-progress'; p.startedAt=Date.now(); p.currentIndex=0;
+    await sSet(progKey(id),p);
+    window.location.hash = '#exam/'+id;
+  };
+
+  pollHandle = setInterval(async ()=>{
+    const s = await getSession();
+    if(s.sessionId !== prog.sessionId){
+      window.location.hash='';
+      return;
+    }
+    applySession(s);
+  },2500);
+}
+
+function resetNotice(){
+  return `
+    <div class="topbar"><div class="brand"><img src="${LOGO}" alt="Learners Point"/></div></div>
+    <div class="waiting-wrap" style="text-align:center;padding-top:100px;">
+      <div class="card" style="padding:48px;max-width:440px;margin:0 auto;">
+        <div style="font-size:34px;margin-bottom:12px;">🔄</div>
+        <h2 style="margin-bottom:10px;">Session was reset</h2>
+        <p style="color:var(--ink-soft);font-size:14.5px;line-height:1.6;margin-bottom:20px;">The trainer has reset this simulation session. Please log in again to rejoin.</p>
+        <button class="btn btn-primary" id="back-home">Back to login</button>
+      </div>
+    </div>`;
+}
+
+/* --------------------------------- EXAM ------------------------------------ */
+
+async function renderExam(id){
+  let prog = await sGet(progKey(id));
+  if(!prog){ window.location.hash=''; return; }
+  const session = await getSession();
+  if(prog.sessionId !== session.sessionId){ app.innerHTML = resetNotice(); document.getElementById('back-home').onclick=()=>window.location.hash=''; return; }
+  if(prog.status==='waiting'){ window.location.hash='#waiting/'+id; return; }
+  if(prog.status==='completed'){ window.location.hash='#results/'+id; return; }
+
+  let idx = prog.currentIndex || 0;
+  if(idx >= ALL_ITEMS.length){ await finishExam(id,prog); return; }
+
+  const item = ALL_ITEMS[idx];
+  const answered = item.section==='A' ? prog.answers[item.id] : prog.bcdAnswers[item.id]!==undefined;
+
+  app.innerHTML = `
+    <div class="exam-top">
+      <div class="brand"><img src="${LOGO}" alt="Learners Point" style="height:22px;"/></div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="pill pill-gray" id="sync-pill"><span class="dot dot-live" id="sync-dot"></span> <span id="sync-label">Synced</span></span>
+        <span class="pill ${item.section==='A'?'pill-teal':item.section==='B'?'pill-blue':item.section==='C'?'pill-orange':'pill-gray'}">Section ${item.section}</span>
+        <div class="timer-chip" id="timer-chip"><span class="lbl">Time left</span><span id="timer-txt">--:--</span></div>
+      </div>
+    </div>
+    <div class="rail-wrap">
+      <div class="rail" id="rail"></div>
+      <div class="rail-legend">
+        <span><i style="background:var(--teal)"></i>A · MCQ (20)</span>
+        <span><i style="background:var(--blue)"></i>B · Short answer (10)</span>
+        <span><i style="background:var(--orange)"></i>C · Scenario (5)</span>
+        <span><i style="background:var(--ink)"></i>D · Essay (2)</span>
+      </div>
+    </div>
+    <div class="q-wrap">
+      <div class="card q-card" id="q-card"></div>
+    </div>
+  `;
+
+  buildRail(idx);
+  renderQuestionCard(item, idx, prog, id);
+  updateSyncIndicator();
+
+  // timer
+  const timerTxt = document.getElementById('timer-txt');
+  const chip = document.getElementById('timer-chip');
+  function tick(){
+    const elapsed = (Date.now() - prog.startedAt)/1000;
+    const remain = EXAM_SECONDS - elapsed;
+    if(remain<=0){
+      timerTxt.textContent='00:00';
+      clearInterval(tickHandle);
+      finishExam(id, prog, true);
+      return;
+    }
+    timerTxt.textContent = fmtTime(remain);
+    if(remain < 300) chip.classList.add('warn'); else chip.classList.remove('warn');
+  }
+  tick();
+  tickHandle = setInterval(tick,1000);
+
+  // poll for trainer reset
+  pollHandle = setInterval(async ()=>{
+    const s = await getSession();
+    if(s.sessionId !== prog.sessionId){
+      window.location.hash='';
+    }
+  },4000);
+}
+
+function buildRail(currentIdx){
+  const rail = document.getElementById('rail');
+  rail.innerHTML = ALL_ITEMS.map((it,i)=>{
+    let cls = 'rail-seg';
+    if(i<currentIdx) cls += ' done-'+it.section.toLowerCase();
+    if(i===currentIdx) cls += ' current';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+}
+
+function renderQuestionCard(item, idx, prog, id){
+  const card = document.getElementById('q-card');
+  const sectionLabel = {A:'Multiple Choice',B:'Short Answer',C:'Scenario',D:'Essay / Critical Thinking'}[item.section];
+  let inner = `<div class="q-meta"><span class="q-num">Question ${idx+1} of ${ALL_ITEMS.length}</span><span class="pill pill-gray">${sectionLabel} · ${item.marks} mark${item.marks>1?'s':''}</span></div>`;
+
+  if(item.section==='A'){
+    inner += `<div class="q-text">${esc(item.q)}</div>`;
+    inner += `<div id="opts">`;
+    const existing = prog.answers[item.id];
+    item.opts.forEach((opt,i)=>{
+      let cls='opt';
+      let icon = `<div class="letter">${letter(i)}</div>`;
+      if(existing){
+        cls+=' disabled';
+        if(i===item.correct) cls+=' correct';
+        else if(i===existing.selected) cls+=' incorrect';
+      }
+      inner += `<div class="${cls}" data-i="${i}">${icon}<div class="txt">${esc(opt)}</div></div>`;
+    });
+    inner += `</div>`;
+    inner += `<div id="fb-zone"></div>`;
+    if(existing){
+      inner += feedbackBlockA(item, existing);
+    }
+    inner += `<div class="q-actions" id="actions"></div>`;
+  } else if(item.section==='B'){
+    inner += `<div class="q-text">${esc(item.q)}</div>`;
+    const existing = prog.bcdAnswers[item.id];
+    inner += `<textarea id="ta" rows="6" placeholder="Type your answer here…" ${existing!==undefined?'disabled':''}>${esc(existing||'')}</textarea>`;
+    inner += `<div class="char-count" id="cc"></div>`;
+    inner += `<div id="fb-zone"></div>`;
+    if(existing!==undefined) inner += feedbackBlockB(item);
+    inner += `<div class="q-actions" id="actions"></div>`;
+  } else if(item.section==='C'){
+    inner += `<div class="q-text">${esc(item.title)}</div>`;
+    inner += `<div class="scenario-box">${esc(item.scenario)}</div>`;
+    if(item.table){
+      inner += `<div class="table-wrap"><table class="scenario-table"><thead><tr>${item.table.headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`;
+      inner += item.table.rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+      inner += `</tbody></table></div>`;
+    }
+    inner += `<ul class="subparts">` + item.subparts.map((s,i)=>`<li><b>${letter(i).toLowerCase()})</b> ${esc(s)}</li>`).join('') + `</ul>`;
+    const existing = prog.bcdAnswers[item.id];
+    inner += `<textarea id="ta" rows="8" placeholder="Address each part (a, b, c…) in your response…" ${existing!==undefined?'disabled':''}>${esc(existing||'')}</textarea>`;
+    inner += `<div class="char-count" id="cc"></div>`;
+    inner += `<div id="fb-zone"></div>`;
+    if(existing!==undefined) inner += feedbackBlockCD();
+    inner += `<div class="q-actions" id="actions"></div>`;
+  } else { // D
+    inner += `<div class="q-text">${esc(item.title)}</div>`;
+    inner += `<div class="scenario-box">${esc(item.prompt)}</div>`;
+    inner += `<ul class="subparts">` + item.topics.map((t,i)=>`<li><b>•</b> ${esc(t)}</li>`).join('') + `</ul>`;
+    if(item.closing){ inner += `<p style="font-size:14px;color:var(--ink-soft);margin-bottom:16px;">${esc(item.closing)}</p>`; }
+    const existing = prog.bcdAnswers[item.id];
+    inner += `<textarea id="ta" rows="10" placeholder="Write your essay response, addressing each area above…" ${existing!==undefined?'disabled':''}>${esc(existing||'')}</textarea>`;
+    inner += `<div class="char-count" id="cc"></div>`;
+    inner += `<div id="fb-zone"></div>`;
+    if(existing!==undefined) inner += feedbackBlockCD();
+    inner += `<div class="q-actions" id="actions"></div>`;
+  }
+
+  card.innerHTML = inner;
+  wireQuestionCard(item, idx, prog, id);
+}
+
+function feedbackBlockA(item, existing){
+  if(existing.selected===item.correct){
+    return `<div class="feedback good"><div class="icon">✓</div><div><b>Correct!</b>${esc(item.why)}</div></div>`;
+  }
+  return `<div class="feedback bad"><div class="icon">✕</div><div><b>Not quite — correct answer: ${letter(item.correct)}. ${esc(item.opts[item.correct])}</b>${esc(item.why)}</div></div>`;
+}
+function feedbackBlockB(item){
+  return `<div class="feedback info"><div class="icon">💡</div><div><b>Model answer, for self-review</b>${esc(item.model)}</div></div>`;
+}
+function feedbackBlockCD(){
+  return `<div class="feedback note"><div class="icon">📝</div><div><b>Recorded for trainer review</b>This question has no single correct answer — your response has been saved and will be reviewed by your trainer.</div></div>`;
+}
+
+function wireQuestionCard(item, idx, prog, id){
+  const actions = document.getElementById('actions');
+  const isLast = idx === ALL_ITEMS.length-1;
+
+  if(item.section==='A'){
+    const existing = prog.answers[item.id];
+    if(!existing){
+      document.querySelectorAll('#opts .opt').forEach(el=>{
+        el.onclick = async ()=>{
+          const i = parseInt(el.dataset.i,10);
+          const isCorrect = i===item.correct;
+          prog.answers[item.id] = {selected:i, isCorrect};
+          if(isCorrect) prog.sectionAScore = (prog.sectionAScore||0)+1;
+          await sSet(progKey(id),prog);
+          renderQuestionCard(item, idx, prog, id);
+        };
+      });
+      actions.innerHTML = '';
+    } else {
+      actions.innerHTML = `<button class="btn btn-primary" id="next-btn">${isLast?'Finish Exam':'Next Question →'}</button>`;
+      document.getElementById('next-btn').onclick = ()=>advance(id, prog, idx);
+    }
+  } else {
+    const ta = document.getElementById('ta');
+    const cc = document.getElementById('cc');
+    const existing = prog.bcdAnswers[item.id];
+    if(existing===undefined){
+      function updateCC(){ cc.textContent = (ta.value.length)+' characters'; }
+      ta.addEventListener('input',updateCC); updateCC();
+      actions.innerHTML = `<button class="btn btn-primary" id="submit-btn">Submit Response</button>`;
+      document.getElementById('submit-btn').onclick = async ()=>{
+        const val = ta.value.trim();
+        if(!val){ toast('Please write a response before submitting.'); return; }
+        prog.bcdAnswers[item.id] = val;
+        await sSet(progKey(id),prog);
+        renderQuestionCard(item, idx, prog, id);
+      };
+    } else {
+      cc.textContent = existing.length+' characters';
+      actions.innerHTML = `<button class="btn btn-primary" id="next-btn">${isLast?'Finish Exam':'Next Question →'}</button>`;
+      document.getElementById('next-btn').onclick = ()=>advance(id, prog, idx);
+    }
+  }
+}
+
+async function advance(id, prog, idx){
+  if(idx+1 >= ALL_ITEMS.length){
+    await finishExam(id, prog);
+  } else {
+    prog.currentIndex = idx+1;
+    await sSet(progKey(id),prog);
+    renderExam(id);
+  }
+}
+
+async function finishExam(id, prog, timedOut){
+  prog.status='completed';
+  prog.completedAt = Date.now();
+  prog.currentIndex = ALL_ITEMS.length;
+  if(timedOut) prog.timedOut = true;
+  await sSet(progKey(id),prog);
+  window.location.hash = '#results/'+id;
+  if(timedOut) toast('Time is up — your exam was auto-submitted.');
+}
+
+/* ------------------------------- RESULTS ---------------------------------- */
+
+async function renderResults(id){
+  const prog = await sGet(progKey(id));
+  if(!prog){ window.location.hash=''; return; }
+  if(prog.status!=='completed'){ window.location.hash = prog.status==='waiting' ? '#waiting/'+id : '#exam/'+id; return; }
+
+  const scoreA = prog.sectionAScore||0;
+  const badge = badgeFor(scoreA);
+
+  let reviewA = SECTION_A.map((q,i)=>{
+    const a = prog.answers[q.id];
+    const ok = a && a.selected===q.correct;
+    return `<div class="review-item">
+      <div class="review-q">${i+1}. ${esc(q.q)} <span class="${ok?'badge-check':'badge-x'}">${ok?'✓':'✕'}</span></div>
+      <div class="review-a">Your answer: <b>${a?letter(a.selected)+'. '+esc(q.opts[a.selected]):'—'}</b>${!ok?`<br/>Correct: <b>${letter(q.correct)}. ${esc(q.opts[q.correct])}</b>`:''}<br/>${esc(q.why)}</div>
+    </div>`;
+  }).join('');
+
+  let reviewB = SECTION_B.map((q,i)=>{
+    const a = prog.bcdAnswers[q.id];
+    return `<div class="review-item">
+      <div class="review-q">${21+i}. ${esc(q.q)}</div>
+      <div class="review-a">Your answer: ${esc(a||'—')}<br/><b>Model answer:</b> ${esc(q.model)}</div>
+    </div>`;
+  }).join('');
+
+  let reviewCD = [...SECTION_C.map((q,i)=>({num:31+i,title:q.title,body:prog.bcdAnswers[q.id]})),
+                  ...SECTION_D.map((q,i)=>({num:36+i,title:q.title,body:prog.bcdAnswers[q.id]}))]
+    .map(q=>`<div class="review-item"><div class="review-q">${q.num}. ${esc(q.title)}</div><div class="review-a">${esc(q.body||'—')}<br/><i style="color:var(--ink-soft);">Pending trainer review — no single correct answer.</i></div></div>`).join('');
+
+  app.innerHTML = `
+    <div class="topbar"><div class="brand"><img src="${LOGO}" alt="Learners Point"/></div><span class="pill pill-gray">Results</span></div>
+    <div class="results-wrap">
+      <div class="card badge-hero">
+        <div class="badge-icon" style="background:${badge.bg};">${badge.icon}</div>
+        <span class="pill" style="background:${badge.bg};color:${badge.color};margin-bottom:10px;">${badge.title}</span>
+        <h2>Nice work, ${esc(prog.name.split(' ')[0])}.</h2>
+        <p>${esc(badge.remark)}</p>
+      </div>
+
+      <div class="score-row">
+        <div class="card score-box"><div class="v">${scoreA}/${TOTAL_A}</div><div class="l">Section A score</div></div>
+        <div class="card score-box"><div class="v">${Math.round(scoreA/TOTAL_A*100)}%</div><div class="l">MCQ accuracy</div></div>
+        <div class="card score-box"><div class="v">37/37</div><div class="l">Questions completed</div></div>
+        <div class="card score-box"><div class="v mono">${prog.timedOut?'⏱ Timed out':'On time'}</div><div class="l">Submission</div></div>
+      </div>
+
+      <div class="card" style="padding:22px;">
+        <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);margin-bottom:6px;">Marking guide overview</h4>
+        <table class="marks-table">
+          <tr><th>Section</th><th>Marks</th><th>Status</th></tr>
+          <tr><td>Section A — Multiple Choice</td><td>${scoreA} / 20</td><td><span class="pill pill-teal">Auto-graded</span></td></tr>
+          <tr><td>Section B — Short Answer</td><td>— / 30</td><td><span class="pill pill-gray">Trainer review</span></td></tr>
+          <tr><td>Section C — Scenarios</td><td>— / 30</td><td><span class="pill pill-gray">Trainer review</span></td></tr>
+          <tr><td>Section D — Critical Thinking</td><td>— / 20</td><td><span class="pill pill-gray">Trainer review</span></td></tr>
+          <tr><td>Total</td><td>${scoreA} / 100 so far</td><td></td></tr>
+        </table>
+      </div>
+
+      <div class="card review-section" style="padding:22px;">
+        <h3>Section A — Multiple Choice Review</h3>
+        ${reviewA}
+      </div>
+      <div class="card review-section" style="padding:22px;">
+        <h3>Section B — Short Answer Review</h3>
+        ${reviewB}
+      </div>
+      <div class="card review-section" style="padding:22px;">
+        <h3>Sections C &amp; D — Scenario &amp; Essay Responses</h3>
+        ${reviewCD}
+      </div>
+    </div>
+    <footer>Learners Point · CIPP Exam Simulation · Submitted ${fmtDT(prog.completedAt)}</footer>
+  `;
+}
+
+/* ------------------------------- TRAINER ----------------------------------- */
+
+let trainerModalId = null;
+
+async function renderTrainer(){
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand"><img src="${LOGO}" alt="Learners Point"/><div class="div"></div><span class="tag">Trainer Dashboard</span></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="pill pill-gray" id="sync-pill"><span class="dot dot-live" id="sync-dot"></span> <span id="sync-label">Synced</span></span>
+        <span class="pill pill-gray" id="live-pill"><span class="dot dot-idle" id="live-dot"></span> Connecting…</span>
+      </div>
+    </div>
+    <div class="dash-wrap">
+      <div class="dash-head">
+        <div>
+          <h1 style="font-size:24px;">CIPP Exam Simulation</h1>
+          <div style="color:var(--ink-soft);font-size:13.5px;margin-top:4px;">Live control &amp; monitoring</div>
+        </div>
+        <div class="dash-controls">
+          <span class="pill" id="status-pill">—</span>
+          <button class="btn btn-primary" id="start-sim">▶ Start Simulation</button>
+          <button class="btn btn-danger" id="reset-sim">↺ Reset Simulation</button>
+        </div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="card kpi"><div class="n" id="kpi-total">0</div><div class="l">Learners joined</div></div>
+        <div class="card kpi"><div class="n" id="kpi-progress">0</div><div class="l">In progress</div></div>
+        <div class="card kpi"><div class="n" id="kpi-done">0</div><div class="l">Completed</div></div>
+        <div class="card kpi"><div class="n" id="kpi-avg">—</div><div class="l">Avg. Section A score</div></div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <h3>Participants</h3>
+          <span style="font-size:12.5px;color:var(--ink-soft);">Updates live every few seconds</span>
+        </div>
+        <div id="table-zone"></div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <h3>Answer Key</h3>
+          <button class="btn btn-sm btn-ghost" id="ak-toggle">Show / hide</button>
+        </div>
+        <div id="ak-zone" style="padding:20px;display:none;"></div>
+      </div>
+    </div>
+    <footer>Learners Point · CIPP Exam Simulation · Trainer view</footer>
+  `;
+
+  document.getElementById('start-sim').onclick = async ()=>{
+    const s = await getSession();
+    s.status='active'; s.startedAt=Date.now();
+    await sSet(SESSION_KEY,s);
+    toast('Simulation started — learners can now begin.');
+    refreshTrainer();
+  };
+  document.getElementById('reset-sim').onclick = async ()=>{
+    if(!confirm('Reset the simulation? This will clear all learner progress and return everyone to the login screen.')) return;
+    const keys = await sList(PROGRESS_PREFIX);
+    await Promise.all(keys.map(k=>sDel(k)));
+    await sSet(SESSION_KEY, {status:'waiting', startedAt:null, sessionId:'S'+Date.now()});
+    toast('Simulation reset.');
+    refreshTrainer();
+  };
+  document.getElementById('ak-toggle').onclick = ()=>{
+    const z = document.getElementById('ak-zone');
+    if(z.style.display==='none'){ z.style.display='block'; z.innerHTML = buildAnswerKeyHTML(); }
+    else z.style.display='none';
+  };
+
+  await refreshTrainer();
+  pollHandle = setInterval(refreshTrainer, 3000);
+}
+
+function buildAnswerKeyHTML(){
+  let a = `<div class="ak-section"><h4>Section A — Multiple Choice (correct answers)</h4>`;
+  a += SECTION_A.map((q,i)=>`<div class="ak-row"><span class="qn">${i+1}</span><span class="ans">${letter(q.correct)}</span><span>${esc(q.opts[q.correct])}</span></div>`).join('');
+  a += `</div>`;
+  let b = `<div class="ak-section"><h4>Section B — Suggested Points</h4>`;
+  b += SECTION_B.map((q,i)=>`<div class="ak-row" style="align-items:flex-start;"><span class="qn">${21+i}</span><span style="font-size:13.5px;line-height:1.5;">${esc(q.model)}</span></div>`).join('');
+  b += `</div>`;
+  let cd = `<div class="ak-section"><h4>Sections C &amp; D</h4><p style="font-size:13.5px;color:var(--ink-soft);line-height:1.6;">No single model answer is provided for scenario and essay questions — grade against your organization's rubric using the marking guide (6 marks per Section C scenario, 10 marks per Section D essay).</p></div>`;
+  return a+b+cd;
+}
+
+let trainerRefreshing = false;
+async function refreshTrainer(){
+  if(trainerRefreshing) return; // don't let overlapping polls pile up requests
+  trainerRefreshing = true;
+  try{
+    await refreshTrainerInner();
+  } finally {
+    trainerRefreshing = false;
+  }
+}
+
+async function refreshTrainerInner(){
+  const dot = document.getElementById('live-dot');
+  const pill = document.getElementById('live-pill');
+  if(dot){ dot.className='dot dot-live'; pill.innerHTML='<span class="dot dot-live"></span> Live'; }
+  updateSyncIndicator();
+
+  const session = await getSession();
+  const statusPill = document.getElementById('status-pill');
+  if(statusPill){
+    if(session.status==='active'){ statusPill.className='pill pill-teal'; statusPill.textContent='● Session active'; }
+    else{ statusPill.className='pill pill-orange'; statusPill.textContent='● Waiting to start'; }
+  }
+  const startBtn = document.getElementById('start-sim');
+  if(startBtn) startBtn.disabled = session.status==='active';
+  if(startBtn) startBtn.textContent = session.status==='active' ? '✓ Session Active' : '▶ Start Simulation';
+
+  // discover learners straight from their own progress keys — parallel
+  // fetch, no shared index to race on or fall out of sync with
+  const progs = await getAllProgress();
+
+  const kt = document.getElementById('kpi-total'); if(kt) kt.textContent = progs.length;
+  const kp = document.getElementById('kpi-progress'); if(kp) kp.textContent = progs.filter(p=>p.status==='in-progress').length;
+  const kd = document.getElementById('kpi-done'); if(kd) kd.textContent = progs.filter(p=>p.status==='completed').length;
+  const doneList = progs.filter(p=>p.status==='completed');
+  const ka = document.getElementById('kpi-avg');
+  if(ka) ka.textContent = doneList.length ? (doneList.reduce((s,p)=>s+(p.sectionAScore||0),0)/doneList.length).toFixed(1)+'/20' : '—';
+
+  const zone = document.getElementById('table-zone');
+  if(!zone) return;
+  if(!progs.length){
+    zone.innerHTML = `<div class="empty-state"><div class="ic">👥</div>No learners have joined yet. Share the session link to get started.</div>`;
+    return;
+  }
+  zone.innerHTML = `<table class="dash-table"><thead><tr>
+      <th>Learner</th><th>Email</th><th>Progress</th><th>Section A</th><th>Status</th><th>Completed</th><th></th>
+    </tr></thead><tbody>${
+      progs.map(p=>{
+        const pct = Math.round((p.currentIndex||0)/ALL_ITEMS.length*100);
+        const statusPillHtml = p.status==='completed' ? '<span class="pill pill-teal">Completed</span>'
+          : p.status==='in-progress' ? '<span class="pill pill-orange">In progress</span>'
+          : '<span class="pill pill-gray">Waiting</span>';
+        return `<tr>
+          <td class="name-cell">${esc(p.name)}</td>
+          <td class="email-cell">${esc(p.email)}</td>
+          <td><span class="progress-track"><span class="progress-fill" style="width:${pct}%"></span></span>${p.currentIndex||0}/${ALL_ITEMS.length}</td>
+          <td>${p.status==='completed'||((p.currentIndex||0)>0) ? (p.sectionAScore||0)+'/20' : '—'}</td>
+          <td>${statusPillHtml}</td>
+          <td>${fmtDT(p.completedAt)}</td>
+          <td><button class="btn btn-sm btn-ghost view-btn" data-id="${p.id}">View</button></td>
+        </tr>`;
+      }).join('')
+    }</tbody></table>`;
+
+  zone.querySelectorAll('.view-btn').forEach(b=>{
+    b.onclick = ()=> openLearnerModal(b.dataset.id);
+  });
+}
+
+async function openLearnerModal(id){
+  const p = await sGet(progKey(id));
+  if(!p) return;
+  const overlay = document.createElement('div');
+  overlay.className='modal-overlay';
+  overlay.innerHTML = `<div class="modal">
+    <div class="modal-head">
+      <div><h3 style="font-size:16.5px;">${esc(p.name)}</h3><div style="font-size:12.5px;color:var(--ink-soft);">${esc(p.email)}</div></div>
+      <button class="close-x" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="ak-section">
+        <h4>Section A — ${p.sectionAScore||0}/20 correct</h4>
+        ${SECTION_A.map((q,i)=>{
+          const a = p.answers[q.id];
+          const ok = a && a.selected===q.correct;
+          return `<div class="ak-row" style="align-items:flex-start;">
+            <span class="qn">${i+1}</span>
+            <span class="${ok?'badge-check':'badge-x'}" style="width:18px;flex:none;">${ok?'✓':(a?'✕':'—')}</span>
+            <span style="font-size:13.5px;line-height:1.5;">${esc(q.q)}<br/><span style="color:var(--ink-soft);">Answered: ${a?letter(a.selected)+'. '+esc(q.opts[a.selected]):'Not answered'} ${!ok?'· Correct: '+letter(q.correct)+'. '+esc(q.opts[q.correct]):''}</span></span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="ak-section">
+        <h4>Section B — Short Answer</h4>
+        ${SECTION_B.map((q,i)=>`<div class="ak-row" style="align-items:flex-start;flex-direction:column;gap:4px;">
+            <b style="font-size:13.5px;">${21+i}. ${esc(q.q)}</b>
+            <span style="font-size:13.5px;color:var(--ink);">${esc(p.bcdAnswers[q.id]||'Not answered')}</span>
+            <span style="font-size:12.5px;color:var(--ink-soft);">Suggested: ${esc(q.model)}</span>
+          </div>`).join('')}
+      </div>
+      <div class="ak-section">
+        <h4>Sections C &amp; D — For manual grading</h4>
+        ${[...SECTION_C.map((q,i)=>({n:31+i,t:q.title,id:q.id})),...SECTION_D.map((q,i)=>({n:36+i,t:q.title,id:q.id}))].map(q=>`
+          <div class="ak-row" style="align-items:flex-start;flex-direction:column;gap:4px;">
+            <b style="font-size:13.5px;">${q.n}. ${esc(q.t)}</b>
+            <span style="font-size:13.5px;color:var(--ink);">${esc(p.bcdAnswers[q.id]||'Not answered')}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#modal-close').onclick = ()=>overlay.remove();
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+}
+</script>
+</body>
+</html>
